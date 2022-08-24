@@ -49,20 +49,23 @@ router.get("/register", (req, res) => {
     res.status(200).sendFile("./views/register.html", {
         root: __dirname
     });
+    // res.status(200).sendFile(path.join(__dirname, 'views/register.html'));
 });
 
 // login PAGE ROUTER
 router.get("/login", (req, res) => {
-    res.status(200).sendFile("./views/login.html", {
-        root: __dirname
-    });
+    // res.status(200).sendFile("./views/login.html", {
+    //     root: __dirname
+    // });
+    res.status(200).sendFile(path.join(__dirname, 'views/login.html'));
 });
 
 // products PAGE ROUTER
 router.get("/prod", (req, res) => {
-    res.status(200).sendFile("./views/products.html", {
-        root: __dirname
-    });
+    // res.status(200).sendFile("./views/products.html", {
+    //     root: __dirname
+    // });
+    res.status(200).sendFile(path.join(__dirname, 'views/products.html'));
 });
 
 
