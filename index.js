@@ -46,10 +46,10 @@ router.get("/", (req, res) => {
 
 // register PAGE ROUTER
 router.get("/register", (req, res) => {
-    res.status(200).sendFile("./views/register.html", {
-        root: __dirname
-    });
-    // res.status(200).sendFile(path.join(__dirname, 'views/register.html'));
+    // res.status(200).sendFile("./views/register.html", {
+    //     root: __dirname
+    // });
+    res.status(200).sendFile(path.join(__dirname, 'views/register.html'));
 });
 
 // login PAGE ROUTER
