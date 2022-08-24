@@ -9,12 +9,20 @@ const {genSalt, compare, hash } = require("bcrypt");
 const app = express();
 const router = express.Router();
 const port = parseInt(process.env.PORT) || 4000;
+const path = require('path');
 
-// SERVER LISTEN
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
-
+app.use(cors({
+    origin: ['http://127.0.0.1:8080', 'http://localhost:8080'],
+    credentials: true
+}));
+// add cors to the app variable
+app.use(
+    router,
+    express.json(),
+    express.urlencoded({
+        extended: true,
+    })
+);
 // allow access to fetch data from the api externally by  Seting header
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -23,27 +31,17 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(cors({
-    origin: ['http://127.0.0.1:8080', 'http://localhost:8080'],
-    credentials: true
-}));
-
-// add cors to the app variable
-app.use(
-    router,
-    cors(),
-    express.json(),
-    express.urlencoded({
-        extended: true,
-    })
-);
-
+// SERVER LISTEN
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
 // nav router
 // HOME PAGE ROUTER
 router.get("/", (req, res) => {
-    res.status(200).sendFile("./views/index.html", {
-        root: __dirname
-    });
+    // res.status(200).sendFile("./views/index.html", {
+    //     root: __dirname
+    // });
+    res.status(200).sendFile(path.join(__dirname, 'views/index.html'));
 });
 
 // register PAGE ROUTER
