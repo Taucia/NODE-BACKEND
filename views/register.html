@@ -14,8 +14,22 @@
     <a href="/products">products</a>
    </nav> 
 
-<form    @submit.prevent="submit" action="register">
-
+<form @submit.prevent="submit" action="register" method="POST">
+     <!-- FirstName -->
+     <label for="firstName">First Name</label><br>
+     <input type="text" name="firstName" placeholder="Enter Your First Name" required><br>
+     <!-- LastName -->
+     <label for="lastName">Last Name</label><br>
+     <input type="text" name="lastName" placeholder="Enter Your Last Name" required><br>
+     <!-- EmailAddress -->
+     <label for="email">Email</label><br>
+     <input type="email" name="email" placeholder="Enter Your Email Address" required><br>
+     
+     <!-- Password -->
+     <label for="password">Password</label><br>
+     <input type="password" name="password" placeholder="Enter Your Password" required><br>
+     <!-- Button -->
+     <button class="mt-3" type="submit">Register</button>
 </form>
 
 

@@ -61,11 +61,11 @@ router.get("/login", (req, res) => {
 });
 
 // products PAGE ROUTER
-// router.get("/prod", (req, res) => {
-//     res.status(200).sendFile("./views/products.html", {
-//         root: __dirname
-//     });
-// });
+router.get("/prod", (req, res) => {
+    res.status(200).sendFile("./views/products.html", {
+        root: __dirname
+    });
+});
 
 
 // connect to database (TO MAKE SURE ITS CONNECTED).
@@ -92,16 +92,16 @@ app.post('/register',bodyParser.json(),async(req,res) => {
         VALUES(?,?,?,? )
         `;
         db.query(strQry,
-            [bd.firstname,bd.lastname,bd.email,bd.password],
-            (err,result)=>{
+            [bd.firstName,bd.lastName,bd.email,bd.password],
+            (err, results)=>{
                 if(err) {
                     console.log(err);
                     res.send(`
                     <h1>${err}.</h1><br>
                     <a href="/register">Go Back</a>
                     `)}
-                    else{console.log(results);
-                    res.redirect('/login');
+                    else{console.log(`${results}`);
+                    res.send(`register was successfull.`)
                 }
                 })
     }catch(e) {
@@ -109,9 +109,119 @@ app.post('/register',bodyParser.json(),async(req,res) => {
     }
 });
 
+//login
+app.post('/login',bodyParser.json(),async(req,res)=>{
+    try{
+        //get email and password
+        const{email,password} = req.body;
+
+        //mySQL query
+        const strQry =
+        `
+        SELECT email, password FROM users WHERE email = '${email}';
+        `;
+        db.query(strQry,async(err,results)=>{
+            if(err){
+                console.log(err);
+                res.send(`
+                <h1>${err}.</h1><br>
+                <a href="/register">Go Back.</a>
+                `)
+            }else{
+                switch(true){
+                    case(await compare(password,results[0].password)):
+                    res.send('login was successfull.')
+                    break
+                    default:
+                        console.log("Logged In failed.");
+                        //res.redirect('/login');
+                        res.send(`        <h1>Email or Password was Incorrect.<br>Please Insert the correct Email & Password.</h1><br>
+                        <a href="/login">Go Back.</a>
+                        `);
+                    };
+                }
+                })
+            } catch(e){
+                console.log(`FROM LOGIN ${e.message}.`);
+                res.send(`
+                ${e.message}.<br>
+                <a href="/login">Go Back.</a>
+                `)
+            }
+        }
+);
+// get all users
+router.get('/users',(req,res)=>{
+    //mySQL query
+    const strQry =`SELECT * FROM users`;
+    db.query(strQry,(err,results)=>{
+        if(err){
+            console.log(err);
+            res.send(`
+            <h1>${err}.</h1><br>
+            <a href="/">Go Back.</a>
+            `)
+        } else{
+            res.json({
+                status:200,
+                results:results,
+            })
+        }
+    })
+});
+// get 1 user
+router.get('/users/:id',(req,res)=>{
+    //mySQL query
+    const strQry =
+    `
+    SELECT * FROM users WHERE id = ?;
+    `;
+    db.query(strQry,[req.params.id],(err,results) =>{
+        if(err)throw err;
+        res.json({
+            status:200,
+            results:(results.length<=0)?'Sorry no product was found':results
+        })
+    })
+});
+//delete user
+app.delete('/users/:id',(req, res)=>{
+    //mySQL query
+    const strQry =
+    `
+    DELETE FROM users WHERE id = ?;
+    ALTER TABLE users AUTO_INCREMENT = 1;
+    `;
+    db.query(strQry, [req.params.id], (err,results)=>{
+        if(err) throw err;
+        res.send(`USERS WAS DELETED`);
+    });
+});
+//Update user
+router.put("/users/:id",bodyParser.json(),async(req,res)=>{
+    const {firstName, lastName, email, password} = req.body;
+    let sql = `UPDATE users SET ? WHERE id =${req.params.id}`;
+    const user = {
+        firstName, lastName,email,password
+    };
+    db.query(sql,user,(err)=>{
+        if(err){
+            console.log(err);
+            res.send(`
+            <h1>${err}.</h1><br>
+            <a href="/register">Go Back.</a>
+            `)
+        } else{
+            res.json({
+                msg:"Updated user Successfully",
+            });
+        }
+    });
+});
 
 
-// get all products
+// Create a new products
+
 router.post("/products",bodyParser.json(),(req,res) => {
     const bd = req.body;
     // bd.totalamount = bd.quantity * bd.price;
@@ -129,6 +239,8 @@ router.post("/products",bodyParser.json(),(req,res) => {
     );
 });
 
+// get all products
+
 router.get("/products", (req, res) => {
     // Query
     const strQry = `
@@ -144,3 +256,39 @@ router.get("/products", (req, res) => {
     });
 });
 
+0
+
+
+//*UPDATE A PRODUCT*//
+
+router.put("/products/:id", bodyParser.json(), (req, res) => {
+    // const bd = req.body;
+    // Query
+    const strQry = `
+    UPDATE products 
+    SET title=?, author=?, category=?, description=?,  img=?,pdf=?
+    WHERE id=?`;
+    db.query(
+        strQry,
+        [req.body.title, req.body.author, req.body.category, req.body.description, req.body.img, req.body.pdf, req.params.id],
+        (err, results) => {
+            if (err) throw err;
+            res.send(`${results.affectedRows} PRODUCT/S UPDATED`);
+        }
+    );
+});
+
+//*DELETE A PRODUCT WITH A SPECIFIC ID*//
+
+app.delete("/products/:id", (req, res) => {
+    // QUERY
+    const strQry = `
+    DELETE FROM products 
+    WHERE id = ?;
+    ALTER TABLE products AUTO_INCREMENT = 1;
+    `;
+    db.query(strQry, [req.params.id], (err, data) => {
+        if (err) throw err;
+        res.send(`${data.affectedRows} PRODUCT/S WAS DELETED`);
+    });
+});
