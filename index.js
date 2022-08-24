@@ -101,7 +101,13 @@ app.post('/register',bodyParser.json(),async(req,res) => {
                     <a href="/register">Go Back</a>
                     `)}
                     else{console.log(`${results}`);
-                    res.send(`register was successfull.`)
+                    res.send(`<nav>
+                    <a href="/">home</a>
+                    <a href="/register">register</a>
+                    <a href="/login">login</a>
+                    <a href="/products">products</a>
+                   </nav> <br> ${result.affectedRows} USER ADDEED`)
+                    
                 }
                 })
     }catch(e) {
