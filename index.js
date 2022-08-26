@@ -28,6 +28,7 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Access-Control-Allow-Methods", "*");
+    res.setHeader("Access-Control-Allow-*", "*");
     next();
 });
 
@@ -299,3 +300,148 @@ app.delete("/products/:id", (req, res) => {
         res.send(`${data.affectedRows} PRODUCT/S WAS DELETED`);
     });
 });
+
+
+// CART
+
+//*ADD CART ITEMS FROM SPECIFIC USER*//
+router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
+
+    // mySQL query
+    let cart = `SELECT cart FROM users WHERE id = ${req.params.id};`;
+    // function
+    db.query(cart, (err, results) => {
+        if (err) throw err
+        if (results.length > 0) {
+            let cart;
+            if (results[0].cart == null) {
+                cart = []
+            } else {
+                cart = JSON.parse(results[0].cart)
+            }
+
+    let { Prod_id } = req.body;
+    // mySQL query
+    let product = `Select * FROM products WHERE Prod_id = ?`;
+    // function
+    db.query(product, Prod_id, (err, productData) => {
+        if (err) res.send(`${err}`)
+        let data = {
+            cart_id : cart.length + 1,
+            productData
+        }
+        cart.push(data)
+        console.log(cart);
+        let updateCart = `UPDATE users SET cart = ? WHERE id = ${req.params.id}`
+        db.query(updateCart, JSON.stringify(cart), (err, results) => {
+            if (err) res.send(`${err}`)
+            res.json({
+                cart: results
+            })
+        })
+    })
+}})
+});
+
+//*GET CART ITEMS FROM SPECIFIC USER*
+router.get("/users/:id/cart", (req, res) => {
+// Query
+const strQry = `
+SELECT *
+FROM users
+WHERE id = ?;
+`;
+db.query(strQry, [req.params.id], (err, results) => {
+    if (err) throw err;
+    res.json({
+        status: 200,
+        results: JSON.parse(results[0].cart),
+    });
+});
+});
+
+//*GET single ITEMS FROM SPECIFIC USER*
+router.get("/users/:id/cart/:id", (req, res) => {
+// Query
+const strQry = `
+SELECT *
+FROM users
+WHERE id = ?;
+`;
+db.query(strQry, [req.params.id], (err, results) => {
+    if (err) throw err;
+    res.json({
+        status: 200,
+        results: JSON.parse(results[0].cart),
+    });
+});
+});
+
+//*DELETE CART ITEMS FROM SPECIFIC USER*
+router.delete("/users/:id/cart", (req, res) => {
+// Query
+const strQry = `
+UPDATE users
+SET cart=null
+WHERE id=?
+`;
+db.query(strQry, [req.params.id], (err, results) => {
+    if (err) throw err;
+    res.json({
+        status: 200,
+        results: results,
+    });
+});
+});
+
+// Delete by cart id
+router.delete('/users/:id/cart/:cartId', (req,res)=>{
+const delSingleCartId = `
+    SELECT cart FROM users
+    WHERE id = ${req.params.id}
+`
+db.query(delSingleCartId, (err,results)=>{
+    if(err) throw err;
+    if(results.length > 0){
+        if(results[0].cart != null){
+            const result = JSON.parse(results[0].cart).filter((cart)=>{
+                return cart.cart_id != req.params.cartId;
+            })
+            result.forEach((cart,i) => {
+                cart.cart_id = i + 1
+            });
+            const query = `
+                UPDATE users
+                SET cart = ?
+                WHERE id = ${req.params.id}
+            `
+            db.query(query, [JSON.stringify(result)], (err,results)=>{
+                if(err) throw err;
+                res.json({
+                    status:200,
+                    result: "Successfully deleted item from cart"
+                });
+            })
+        }else{
+            res.json({
+                status:400,
+                result: "This user has an empty cart"
+            })
+        }
+    }else{
+        res.json({
+            status:400,
+            result: "There is no user with that id"
+        });
+    }
+})
+})
+
+
+
+
+
+
+
+
+
