@@ -17,13 +17,13 @@ app.use(cors({
     credentials: true
 }));
 // allow access to fetch data from the api externally by  Seting header
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Access-Control-Allow-Methods", "*");
-    res.setHeader("Access-Control-Allow-*", "*");
-    next();
-});
+// app.use((req, res, next) => {
+//     res.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
+//     res.setHeader("Access-Control-Allow-Headers", "*");
+//     res.setHeader("Access-Control-Allow-Methods", "*");
+//     res.setHeader("Access-Control-Allow-*", "*");
+//     next();
+// });
 // add cors to the app variable
 app.use(
     router,
