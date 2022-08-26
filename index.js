@@ -17,7 +17,7 @@ app.use(cors({
 }));
 // allow access to fetch data from the api externally by  Seting header
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", ['http://127.0.0.1:8080', 'http://localhost:8080']);
+    res.setHeader("Access-Control-Allow-Origin", "http://192.168.9.62:8080/");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Access-Control-Allow-Methods", "*");
     res.setHeader("Access-Control-Allow-*", "*");
