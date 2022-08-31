@@ -268,7 +268,20 @@ router.get("/products", (req, res) => {
     });
 });
 
-0
+router.get("/products/:id", (req, res) => {
+    // Query
+    const strQry = `
+    SELECT *
+    FROM products;
+    WHERE id = ?`;
+    db.query(strQry, [req.params.id], (err, results) => {
+        if (err) throw err;
+        res.json({
+            status: 200,
+            results: results,
+        });
+    });
+});
 
 
 //*UPDATE A PRODUCT*//
