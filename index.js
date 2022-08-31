@@ -272,8 +272,8 @@ router.get("/products/:id", (req, res) => {
     // Query
     const strQry = `
     SELECT *
-    FROM products;
-    WHERE id = ?`;
+    FROM products
+    WHERE id = ?;`;
     db.query(strQry, [req.params.id], (err, results) => {
         if (err) throw err;
         res.json({
