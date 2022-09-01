@@ -58,12 +58,12 @@ router.get("/register", (req, res) => {
 });
 
 // login PAGE ROUTER
-router.get("/login", (req, res) => {
-    // res.status(200).sendFile("./views/login.html", {
-    //     root: __dirname
-    // });
-    res.status(200).sendFile(path.join(__dirname, 'views/login.html'));
-});
+// router.get("/login", (req, res) => {
+//     // res.status(200).sendFile("./views/login.html", {
+//     //     root: __dirname
+//     // });
+//     res.status(200).sendFile(path.join(__dirname, 'views/login.html'));
+// });
 
 // products PAGE ROUTER
 router.get("/prod", (req, res) => {
@@ -75,44 +75,40 @@ router.get("/prod", (req, res) => {
 
 
 //register
-app.post('/register',bodyParser.json(),async(req,res) => {
-    try{
-        const bd = req.body;
-        // Encrypting a password
-        // Default value of salt is 10.
-        bd.password = await hash(bd.password,16);
-        // mySQL query
-        const strQry = 
-        `
-        INSERT INTO users(firstName,lastName,email,password)
-        VALUES(?,?,?,? )
-        `;
-        db.query(strQry,
-            [bd.firstName,bd.lastName,bd.email,bd.password],
-            (err, results)=>{
-                if(err) {
-                    console.log(err);
-                    res.send(`
-                    <h1>${err}.</h1><br>
-                    <a href="/register">Go Back</a>
-                    `)}
-                    else{console.log(`${results}`);
-                    res.send(`<nav>
-                    <a href="/">home</a>
-                    <a href="/register">register</a>
-                    <a href="/login">login</a>
-                    <a href="/products">products</a>
-                   </nav> <br> ${result.affectedRows} USER ADDEED`)
-                    
-                }
-                })
-    }catch(e) {
-        console.log(`FROM REGISTER: ${e.message}`);
-    }
+app.post('/register',bodyParser.json(),async(req,res)=>{
+    try{const bd = req.body;
+    // Encrypting a password
+    //Default value of salt is 10.
+bd.password = await hash(bd.password,16);
+
+    //mySQL query
+    const strQry =
+    `
+    insert into users(firstName, lastName, email, , password) value(?, ?, ?
+        , ?);
+    `;
+    db.query(strQry,
+        [bd.firstName,bd.lastName,bd.email,bd.password],
+        (err,results)=> {
+            if(err){
+                console.log(err);
+                res.send(`<h1>${err}.</h1><br>
+                `)
+            } else{
+                console.log(results);
+                res.json({msg : `register successful`})
+            }
+        });
+} catch(e) {
+    console.log(`FROM REGISTER: ${e.message}`);
+}
 });
 
+
+
+
 //login
-app.post('/login',bodyParser.json(),async(req,res)=>{
+app.patch('/login',bodyParser.json(),async(req,res)=>{
     try{
         //get email and password
         const{email,password} = req.body;
@@ -120,10 +116,11 @@ app.post('/login',bodyParser.json(),async(req,res)=>{
         //mySQL query
         const strQry =
         `
-        SELECT email, password FROM users WHERE email = '${email}';
+        SELECT * FROM users WHERE email = '${email}';
         `;
         db.query(strQry, async (err, results) => {
             if (err) throw err;
+            console.log(results[0].password);
             switch (true) {
                 case (await compare(password, results[0].password)):
                     jwt.sign(JSON.stringify(results[0]), process.env.secret, (err, token) => {
