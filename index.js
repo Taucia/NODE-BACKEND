@@ -196,8 +196,15 @@ app.delete('/users/:id',(req, res)=>{
     ALTER TABLE users AUTO_INCREMENT = 1;
     `;
     db.query(strQry, [req.params.id], (err,results)=>{
-        if(err) throw err;
-        res.send(`USERS WAS DELETED`);
+        if(err) 
+        res.json({
+            status:400,
+            result: `${err}`
+        });;
+        res.json({
+            status:200,
+            result: "Successfully deleted item from cart"
+        });
     });
 });
 //Update user
@@ -304,9 +311,15 @@ app.delete("/products/:id", (req, res) => {
     ALTER TABLE products AUTO_INCREMENT = 1;
     `;
     db.query(strQry, [req.params.id], (err, data) => {
-        if (err) throw err;
-        res.send(`${data.affectedRows} PRODUCT/S WAS DELETED`);
-    });
+        if(err) 
+        res.json({
+            status:400,
+            result: `${err}`
+        });;
+        res.json({
+            status:200,
+            result: "Successfully deleted item from cart"
+        });
 });
 
 
@@ -424,7 +437,11 @@ db.query(delSingleCartId, (err,results)=>{
                 WHERE id = ${req.params.id}
             `
             db.query(query, [JSON.stringify(result)], (err,results)=>{
-                if(err) throw err;
+                if(err) 
+                res.json({
+                    status:400,
+                    result: `${err}`
+                });;
                 res.json({
                     status:200,
                     result: "Successfully deleted item from cart"
