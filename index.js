@@ -320,6 +320,7 @@ app.delete("/products/:id", (req, res) => {
             status:200,
             result: "Successfully deleted item from cart"
         });
+    });
 });
 
 
