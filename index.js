@@ -50,7 +50,7 @@ router.get("/", (req, res) => {
 });
 
 // register PAGE ROUTER
-router.get("/register", (req, res) => {
+router.get("/registertest", (req, res) => {
     // res.status(200).sendFile("./views/register.html", {
     //     root: __dirname
     // });
@@ -58,12 +58,12 @@ router.get("/register", (req, res) => {
 });
 
 // login PAGE ROUTER
-// router.get("/login", (req, res) => {
-//     // res.status(200).sendFile("./views/login.html", {
-//     //     root: __dirname
-//     // });
-//     res.status(200).sendFile(path.join(__dirname, 'views/login.html'));
-// });
+router.get("/logintest", (req, res) => {
+    res.status(200).sendFile("./views/login.html", {
+        root: __dirname
+    });
+    res.status(200).sendFile(path.join(__dirname, 'views/login.html'));
+});
 
 // products PAGE ROUTER
 router.get("/prod", (req, res) => {
@@ -79,25 +79,33 @@ app.post('/register',bodyParser.json(),async(req,res)=>{
     try{const bd = req.body;
     // Encrypting a password
     //Default value of salt is 10.
-bd.password = await hash(bd.password,16);
+bd.password = await hash(bd.password,8);
 
     //mySQL query
     const strQry =
     `
-    insert into users(firstName, lastName, email, , password) value(?, ?, ?
+    insert into users(firstName, lastName, email, password) value(?, ?, ?
         , ?);
     `;
     db.query(strQry,
         [bd.firstName,bd.lastName,bd.email,bd.password],
         (err,results)=> {
-            if(err){
-                console.log(err);
-                res.send(`<h1>${err}.</h1><br>
-                `)
-            } else{
+            if(err) throw err 
+            
                 console.log(results);
-                res.json({msg : `register successful`})
-            }
+                res.json({
+                    msg : `register successful`,
+                    userData : results
+                })
+            
+            // if(err){
+            //     console.log(err);
+            //     res.send(`<h1>${err}.</h1><br>
+            //     `)
+            // } else{
+            //     console.log(results);
+            //     res.json({msg : `register successful`})
+            // }
         });
 } catch(e) {
     console.log(`FROM REGISTER: ${e.message}`);
@@ -108,7 +116,7 @@ bd.password = await hash(bd.password,16);
 
 
 //login
-app.patch('/login',bodyParser.json(),async(req,res)=>{
+app.post('/login',bodyParser.json(),async(req,res)=>{
     try{
         //get email and password
         const{email,password} = req.body;
@@ -326,7 +334,47 @@ app.delete("/products/:id", (req, res) => {
 
 // CART
 
-//*ADD CART ITEMS FROM SPECIFIC USER*//
+// //*ADD CART ITEMS FROM SPECIFIC USER*//
+// router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
+
+//     // mySQL query
+//     let cart = `SELECT cart FROM users WHERE id = ${req.params.id};`;
+//     // function
+//     db.query(cart, (err, results) => {
+//         if (err) throw err
+//         if (results.length > 0) {
+//             let cart;
+//             if (results[0].cart == null) {
+//                 cart = []
+//             } else {
+//                 cart = JSON.parse(results[0].cart)
+//             }
+
+//     let { Prod_id } = req.body;
+//     // mySQL query
+//     let product = `Select * FROM products WHERE id = ?`;
+//     // function
+//     db.query(product, Prod_id, (err, productData) => {
+//         if (err) res.send(`${err}`)
+//         let data = {
+//             cart_id : cart.length + 1,
+//             productData
+//         }
+//         cart.push(data)
+//         console.log(cart);
+//         let updateCart = `UPDATE users SET cart = ? WHERE id = ${req.params.id}`
+//         db.query(updateCart, JSON.stringify(cart), (err, results) => {
+//             if (err) res.send(`${err}`)
+//             res.json({
+//                 cart: results
+//             })
+//         })
+//     })
+// }})
+// });
+
+
+
 router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
 
     // mySQL query
@@ -342,44 +390,95 @@ router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
                 cart = JSON.parse(results[0].cart)
             }
 
-    let { Prod_id } = req.body;
-    // mySQL query
-    let product = `Select * FROM products WHERE Prod_id = ?`;
-    // function
-    db.query(product, Prod_id, (err, productData) => {
-        if (err) res.send(`${err}`)
-        let data = {
-            cart_id : cart.length + 1,
-            productData
-        }
-        cart.push(data)
-        console.log(cart);
-        let updateCart = `UPDATE users SET cart = ? WHERE id = ${req.params.id}`
-        db.query(updateCart, JSON.stringify(cart), (err, results) => {
-            if (err) res.send(`${err}`)
-            res.json({
-                cart: results
+            let { id } = req.body;
+            // mySQL query
+            let product = `Select * FROM products WHERE id = ?`;
+            // function
+            db.query(product, id, (err, productData) => {
+                if (err) res.send(`${err}`)
+                let data = {
+                    cart_id: cart.length + 1,
+                    productData
+                }
+                cart.push(data)
+                console.log(cart);
+                let updateCart = `UPDATE users SET cart = ? WHERE id = ${req.params.id}`
+                db.query(updateCart, JSON.stringify(cart), (err, results) => {
+                    if (err) res.json({
+                        status: 400,
+                        msg:`${err}`})
+                    res.json({
+                        status: 200,
+                        cart: results
+                    })
+                })
             })
-        })
+        }
     })
-}})
 });
+
+// router.post("/users/:id/cart", bodyParser.json(), (req, res) => {
+//     // mySQL query
+//     let cart = `SELECT cart FROM users WHERE id = ${req.params.id};`;
+//     // function
+//     db.query(cart, (err, results) => {
+//         if (err) throw err;
+//         if (results.length > 0) {
+//             let cart;
+//             if (results[0].cart == null) {
+//                 cart = [];
+//             } else {
+//                 cart = JSON.parse(results[0].cart);
+//             }
+//             let {
+//                 id
+//             } = req.body;
+//             // mySQL query
+//             let product = `Select * FROM products WHERE id = ?`;
+//             // function
+//             db.query(product, id, (err, productData) => {
+//                 if (err) res.send(`${err}`);
+//                 let data = {
+//                     cart_id: cart.length + 1,
+//                     productData,
+//                 };
+//                 cart.push(data);
+//                 console.log(cart);
+//                 let updateCart = `UPDATE users SET cart = ? WHERE id = ${req.params.id}`;
+//                 db.query(updateCart, JSON.stringify(cart), (err, results) => {
+//                     if (err) throw err;
+//                     res.json({
+//                         status: 200,
+//                         cart: results,
+//                     });
+//                 });
+//             });
+//         }
+//     });
+// });
 
 //*GET CART ITEMS FROM SPECIFIC USER*
 router.get("/users/:id/cart", (req, res) => {
-// Query
-const strQry = `
-SELECT *
-FROM users
-WHERE id = ?;
-`;
-db.query(strQry, [req.params.id], (err, results) => {
-    if (err) throw err;
-    res.json({
-        status: 200,
-        results: JSON.parse(results[0].cart),
+    // Query
+    const strQry = `
+        SELECT *
+        FROM users
+        WHERE id = ?;
+        `;
+    db.query(strQry, [req.params.id], (err, results) => {
+        if (err) throw err;
+        if (results.length < 1) {
+            res.json({
+                status: 204,
+                results: "No items in cart",
+            });
+        } else {
+            res.json({
+                status: 200,
+                results: JSON.parse(results[0].cart),
+            });
+        }
     });
-});
 });
 
 //*GET single ITEMS FROM SPECIFIC USER*
