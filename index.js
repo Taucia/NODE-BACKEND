@@ -477,7 +477,7 @@ router.get("/users/:id/cart", (req, res) => {
                 status: 200,
                 results: JSON.parse(results[0].cart),
             });
-        }
+        }   
     });
 });
 
