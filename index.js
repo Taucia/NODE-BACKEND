@@ -469,7 +469,7 @@ router.get("/users/:id/cart", (req, res) => {
         if (err) throw err;
         if (results.length < 1) {
             res.json({
-                status: 204,
+                status: 400,
                 results: "No items in cart",
             });
         } else {
