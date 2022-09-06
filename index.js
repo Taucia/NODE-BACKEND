@@ -304,7 +304,10 @@ router.put("/products/:id", bodyParser.json(), (req, res) => {
         [req.body.title, req.body.author, req.body.category, req.body.description, req.body.img, req.body.pdf, req.params.id],
         (err, results) => {
             if (err) throw err;
-            res.send(`${results.affectedRows} PRODUCT/S UPDATED`);
+            res.json({
+                results : results
+            })
+            // res.send(`${results.affectedRows} PRODUCT/S UPDATED`);
         }
     );
 });
@@ -398,7 +401,12 @@ router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
                 if (err) res.send(`${err}`)
                 let data = {
                     cart_id: cart.length + 1,
-                    productData
+                    title : productData[0].title,
+                    author : productData[0].author,
+                    category : productData[0].category,
+                    description : productData[0].description,
+                    img: productData[0].img,
+                    pdf: productData[0].pdf
                 }
                 cart.push(data)
                 console.log(cart);
@@ -482,20 +490,23 @@ router.get("/users/:id/cart", (req, res) => {
 });
 
 //*GET single ITEMS FROM SPECIFIC USER*
-router.get("/users/:id/cart/:id", (req, res) => {
-// Query
-const strQry = `
-SELECT *
-FROM users
-WHERE id = ?;
-`;
-db.query(strQry, [req.params.id], (err, results) => {
-    if (err) throw err;
-    res.json({
-        status: 200,
-        results: JSON.parse(results[0].cart),
+router.get("/users/:id/cart/:cartid", (req, res) => {
+    // Query
+    const strQry = `
+        SELECT *
+        FROM users
+        WHERE id = ?;
+        `;
+    db.query(strQry, [req.params.id], (err, results) => {
+        if (err) throw err;
+        let cartResults = JSON.parse(results[0].cart);
+        res.json({
+            status: 200,
+            results: cartResults.filter((item) => {
+                return item.cart_id == req.params.cartid;
+            }),
+        });
     });
-});
 });
 
 //*DELETE CART ITEMS FROM SPECIFIC USER*
