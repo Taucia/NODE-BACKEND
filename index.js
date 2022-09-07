@@ -5,7 +5,11 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const {genSalt, compare, hash } = require("bcrypt");
+const {
+    genSalt,
+    compare,
+    hash
+} = require("bcrypt");
 const app = express();
 const router = express.Router();
 const port = parseInt(process.env.PORT) || 4000;
@@ -75,55 +79,59 @@ router.get("/prod", (req, res) => {
 
 
 //register
-app.post('/register',bodyParser.json(),async(req,res)=>{
-    try{const bd = req.body;
-    // Encrypting a password
-    //Default value of salt is 10.
-bd.password = await hash(bd.password,8);
+app.post('/register', bodyParser.json(), async (req, res) => {
+    try {
+        const bd = req.body;
+        // Encrypting a password
+        //Default value of salt is 10.
+        bd.password = await hash(bd.password, 8);
 
-    //mySQL query
-    const strQry =
-    `
+        //mySQL query
+        const strQry =
+            `
     insert into users(firstName, lastName, email, password) value(?, ?, ?
         , ?);
     `;
-    db.query(strQry,
-        [bd.firstName,bd.lastName,bd.email,bd.password],
-        (err,results)=> {
-            if(err) throw err 
-            
+        db.query(strQry,
+            [bd.firstName, bd.lastName, bd.email, bd.password],
+            (err, results) => {
+                if (err) throw err
+
                 console.log(results);
                 res.json({
-                    msg : `register successful`,
-                    userData : results
+                    msg: `register successful`,
+                    userData: results
                 })
-            
-            // if(err){
-            //     console.log(err);
-            //     res.send(`<h1>${err}.</h1><br>
-            //     `)
-            // } else{
-            //     console.log(results);
-            //     res.json({msg : `register successful`})
-            // }
-        });
-} catch(e) {
-    console.log(`FROM REGISTER: ${e.message}`);
-}
+
+                // if(err){
+                //     console.log(err);
+                //     res.send(`<h1>${err}.</h1><br>
+                //     `)
+                // } else{
+                //     console.log(results);
+                //     res.json({msg : `register successful`})
+                // }
+            });
+    } catch (e) {
+        console.log(`FROM REGISTER: ${e.message}`);
+    }
 });
 
 
 
 
 //login
-app.post('/login',bodyParser.json(),async(req,res)=>{
-    try{
+app.post('/login', bodyParser.json(), async (req, res) => {
+    try {
         //get email and password
-        const{email,password} = req.body;
+        const {
+            email,
+            password
+        } = req.body;
 
         //mySQL query
         const strQry =
-        `
+            `
         SELECT * FROM users WHERE email = '${email}';
         `;
         db.query(strQry, async (err, results) => {
@@ -132,7 +140,7 @@ app.post('/login',bodyParser.json(),async(req,res)=>{
             switch (true) {
                 case (await compare(password, results[0].password)):
                     jwt.sign(JSON.stringify(results[0]), process.env.secret, (err, token) => {
-                        if(err) throw err;
+                        if (err) throw err;
                         res.json({
                             status: 200,
                             user: results,
@@ -141,10 +149,10 @@ app.post('/login',bodyParser.json(),async(req,res)=>{
                     });
                     break
                 default:
-                  res.json({
-                    status: 400,
-                    msg: "Login Failed."
-                })
+                    res.json({
+                        status: 400,
+                        msg: "Login Failed."
+                    })
             }
         })
     } catch (e) {
@@ -162,76 +170,84 @@ app.post('/login',bodyParser.json(),async(req,res)=>{
 
 
 // get all users
-router.get('/users',(req,res)=>{
+router.get('/users', (req, res) => {
     //mySQL query
-    const strQry =`SELECT * FROM users`;
-    db.query(strQry,(err,results)=>{
-        if(err){
+    const strQry = `SELECT * FROM users`;
+    db.query(strQry, (err, results) => {
+        if (err) {
             console.log(err);
             res.send(`
             <h1>${err}.</h1><br>
             <a href="/">Go Back.</a>
             `)
-        } else{
+        } else {
             res.json({
-                status:200,
-                results:results,
+                status: 200,
+                results: results,
             })
         }
     })
 });
 // get 1 user
-router.get('/users/:id',(req,res)=>{
+router.get('/users/:id', (req, res) => {
     //mySQL query
     const strQry =
-    `
+        `
     SELECT * FROM users WHERE id = ?;
     `;
-    db.query(strQry,[req.params.id],(err,results) =>{
-        if(err)throw err;
+    db.query(strQry, [req.params.id], (err, results) => {
+        if (err) throw err;
         res.json({
-            status:200,
-            results:(results.length<=0)?'Sorry no product was found':results
+            status: 200,
+            results: (results.length <= 0) ? 'Sorry no product was found' : results
         })
     })
 });
 //delete user
-app.delete('/users/:id',(req, res)=>{
+app.delete('/users/:id', (req, res) => {
     //mySQL query
     const strQry =
-    `
+        `
     DELETE FROM users WHERE id = ?;
     ALTER TABLE users AUTO_INCREMENT = 1;
     `;
-    db.query(strQry, [req.params.id], (err,results)=>{
-        if(err) 
+    db.query(strQry, [req.params.id], (err, results) => {
+        if (err)
+            res.json({
+                status: 400,
+                result: `${err}`
+            });;
         res.json({
-            status:400,
-            result: `${err}`
-        });;
-        res.json({
-            status:200,
+            status: 200,
             result: "Successfully deleted item from cart"
         });
     });
 });
 //Update user
-router.put("/users/:id",bodyParser.json(),async(req,res)=>{
-    const {firstName, lastName, email, password} = req.body;
+router.put("/users/:id", bodyParser.json(), async (req, res) => {
+    const {
+        firstName,
+        lastName,
+        email,
+        password
+    } = req.body;
     let sql = `UPDATE users SET ? WHERE id =${req.params.id}`;
     const user = {
-        firstName, lastName,email,password
+        firstName,
+        lastName,
+        email,
+        password
     };
-    db.query(sql,user,(err)=>{
-        if(err){
+    db.query(sql, user, (err) => {
+        if (err) {
             console.log(err);
             res.send(`
             <h1>${err}.</h1><br>
             <a href="/register">Go Back.</a>
             `)
-        } else{
+        } else {
             res.json({
-                msg:"Updated user Successfully",
+                msg: "Updated user Successfully",
             });
         }
     });
@@ -240,7 +256,7 @@ router.put("/users/:id",bodyParser.json(),async(req,res)=>{
 
 // Create a new products
 
-router.post("/products",bodyParser.json(),(req,res) => {
+router.post("/products", bodyParser.json(), (req, res) => {
     const bd = req.body;
     // bd.totalamount = bd.quantity * bd.price;
     // Query
@@ -249,9 +265,9 @@ router.post("/products",bodyParser.json(),(req,res) => {
     VALUES(?, ?, ?, ?, ?, ?)`;
     db.query(
         strQry,
-        [bd.title,bd.author, bd.category, bd.description, bd.img, bd.pdf],
-        (err, results ) => {
-            if(err) throw err;
+        [bd.title, bd.author, bd.category, bd.description, bd.img, bd.pdf],
+        (err, results) => {
+            if (err) throw err;
             res.send(`${results.affectedRows} PRODUCT/S ADDED`);
         }
     );
@@ -305,7 +321,7 @@ router.put("/products/:id", bodyParser.json(), (req, res) => {
         (err, results) => {
             if (err) throw err;
             res.json({
-                results : results
+                results: results
             })
             // res.send(`${results.affectedRows} PRODUCT/S UPDATED`);
         }
@@ -322,13 +338,13 @@ app.delete("/products/:id", (req, res) => {
     ALTER TABLE products AUTO_INCREMENT = 1;
     `;
     db.query(strQry, [req.params.id], (err, data) => {
-        if(err) 
+        if (err)
+            res.json({
+                status: 400,
+                result: `${err}`
+            });;
         res.json({
-            status:400,
-            result: `${err}`
-        });;
-        res.json({
-            status:200,
+            status: 200,
             result: "Successfully deleted item from cart"
         });
     });
@@ -384,7 +400,7 @@ router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
     let cart = `SELECT cart FROM users WHERE id = ${req.params.id};`;
     // function
     db.query(cart, (err, results) => {
-        if (err) throw err
+        if (err) throw err;
         if (results.length > 0) {
             let cart;
             if (results[0].cart == null) {
@@ -393,28 +409,33 @@ router.post('/users/:id/cart', bodyParser.json(), (req, res) => {
                 cart = JSON.parse(results[0].cart)
             }
 
-            let { id } = req.body;
+            let {
+                id
+            } = req.body;
             // mySQL query
             let product = `Select * FROM products WHERE id = ?`;
             // function
+            // console.log(req.body.id);
             db.query(product, id, (err, productData) => {
-                if (err) res.send(`${err}`)
+                // if (err) res.send(`${err}`);
+                if (err) throw err;
                 let data = {
                     cart_id: cart.length + 1,
-                    title : productData[0].title,
-                    author : productData[0].author,
-                    category : productData[0].category,
-                    description : productData[0].description,
+                    title: productData[0].title,
+                    author: productData[0].author,
+                    category: productData[0].category,
+                    description: productData[0].description,
                     img: productData[0].img,
                     pdf: productData[0].pdf
                 }
                 cart.push(data)
-                console.log(cart);
+                // console.log(cart);
                 let updateCart = `UPDATE users SET cart = ? WHERE id = ${req.params.id}`
                 db.query(updateCart, JSON.stringify(cart), (err, results) => {
                     if (err) res.json({
                         status: 400,
-                        msg:`${err}`})
+                        msg: `${err}`
+                    })
                     res.json({
                         status: 200,
                         cart: results
@@ -485,7 +506,7 @@ router.get("/users/:id/cart", (req, res) => {
                 status: 200,
                 results: JSON.parse(results[0].cart),
             });
-        }   
+        }
     });
 });
 
@@ -511,73 +532,64 @@ router.get("/users/:id/cart/:cartid", (req, res) => {
 
 //*DELETE CART ITEMS FROM SPECIFIC USER*
 router.delete("/users/:id/cart", (req, res) => {
-// Query
-const strQry = `
+    // Query
+    const strQry = `
 UPDATE users
 SET cart=null
 WHERE id=?
 `;
-db.query(strQry, [req.params.id], (err, results) => {
-    if (err) throw err;
-    res.json({
-        status: 200,
-        results: results,
+    db.query(strQry, [req.params.id], (err, results) => {
+        if (err) throw err;
+        res.json({
+            status: 200,
+            results: results,
+        });
     });
-});
 });
 
 // Delete by cart id
-router.delete('/users/:id/cart/:cartId', (req,res)=>{
-const delSingleCartId = `
+router.delete('/users/:id/cart/:cartId', (req, res) => {
+    const delSingleCartId = `
     SELECT cart FROM users
     WHERE id = ${req.params.id}
 `
-db.query(delSingleCartId, (err,results)=>{
-    if(err) throw err;
-    if(results.length > 0){
-        if(results[0].cart != null){
-            const result = JSON.parse(results[0].cart).filter((cart)=>{
-                return cart.cart_id != req.params.cartId;
-            })
-            result.forEach((cart,i) => {
-                cart.cart_id = i + 1
-            });
-            const query = `
+    db.query(delSingleCartId, (err, results) => {
+        if (err) throw err;
+        if (results.length > 0) {
+            if (results[0].cart != null) {
+                const result = JSON.parse(results[0].cart).filter((cart) => {
+                    return cart.cart_id != req.params.cartId;
+                })
+                result.forEach((cart, i) => {
+                    cart.cart_id = i + 1
+                });
+                const query = `
                 UPDATE users
                 SET cart = ?
                 WHERE id = ${req.params.id}
             `
-            db.query(query, [JSON.stringify(result)], (err,results)=>{
-                if(err) 
+                db.query(query, [JSON.stringify(result)], (err, results) => {
+                    if (err)
+                        res.json({
+                            status: 400,
+                            result: `${err}`
+                        });;
+                    res.json({
+                        status: 200,
+                        result: "Successfully deleted item from cart"
+                    });
+                })
+            } else {
                 res.json({
-                    status:400,
-                    result: `${err}`
-                });;
-                res.json({
-                    status:200,
-                    result: "Successfully deleted item from cart"
-                });
-            })
-        }else{
+                    status: 400,
+                    result: "This user has an empty cart"
+                })
+            }
+        } else {
             res.json({
-                status:400,
-                result: "This user has an empty cart"
-            })
+                status: 400,
+                result: "There is no user with that id"
+            });
         }
-    }else{
-        res.json({
-            status:400,
-            result: "There is no user with that id"
-        });
-    }
+    })
 })
-})
-
-
-
-
-
-
-
-
-
