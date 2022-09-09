@@ -233,18 +233,13 @@ router.put("/users/:id", bodyParser.json(), async (req, res) => {
     const user = {
         firstName, lastName, email, userRole, password
     };
-    db.query(sql, user, (err) => {
-        if (err) {
-            res.json({
-                status: 400,
-                msg: "Edit Failed.",
-            });
-        } else {
+    db.query(sql, user, (err,results) => {
+        if (err) throw err
             res.json({
                 status: 200,
                 msg: "Edit Successfull.",
+                results : results
             });
-        }
     });
 });
 
