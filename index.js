@@ -95,13 +95,14 @@ app.post('/register', bodyParser.json(), async (req, res) => {
         db.query(strQry,
             [bd.firstName, bd.lastName, bd.email, bd.password],
             (err, results) => {
-                if (err) throw err
-
-                console.log(results);
-                res.json({
-                    msg: `register successful`,
-                    userData: results
-                })
+                if (err){
+                    res.status(400).json({err: 'Email already exists'})
+                }else{
+                    res.status(200).json({
+                        msg: `register successful`,
+                        userData: results
+                    })
+                }
 
                 // if(err){
                 //     console.log(err);
@@ -113,7 +114,9 @@ app.post('/register', bodyParser.json(), async (req, res) => {
                 // }
             });
     } catch (e) {
-        console.log(`FROM REGISTER: ${e.message}`);
+        res.status(400).json({
+            err: "An error occurred"
+        })
     }
 });
 
