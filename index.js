@@ -226,31 +226,23 @@ app.delete('/users/:id', (req, res) => {
         });
     });
 });
-//Update user
+// Update user
 router.put("/users/:id", bodyParser.json(), async (req, res) => {
-    const {
-        firstName,
-        lastName,
-        email,
-        password
-    } = req.body;
-    let sql = `UPDATE users SET ? WHERE id =${req.params.id}`;
+    const { firstName, lastName,email, userRole, password } = req.body;
+    let sql = `UPDATE users SET ? WHERE id = ${req.params.id} `;
     const user = {
-        firstName,
-        lastName,
-        email,
-        password
+        firstName, lastName, email, userRole, password
     };
     db.query(sql, user, (err) => {
         if (err) {
-            console.log(err);
-            res.send(`
-            <h1>${err}.</h1><br>
-            <a href="/register">Go Back.</a>
-            `)
+            res.json({
+                status: 400,
+                msg: "Edit Failed.",
+            });
         } else {
             res.json({
-                msg: "Updated user Successfully",
+                status: 200,
+                msg: "Edit Successfull.",
             });
         }
     });
